@@ -1,0 +1,99 @@
+/*
+ *<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<   TIMER_Config.h   >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+ *
+ *  Author : Muhannad Mahfouz El-Shahiedy
+ *  Layer  : MCAL
+ *  SWC    : TIMER
+ *
+ */ 
+
+#ifndef TIMER_CONFIG_H
+#define TIMER_CONFIG_H
+
+/* ============================================================ */
+/*                          Timer0                               */
+/* ============================================================ */
+
+/*
+ * Choose Timer0 Mode:
+ * 1. TIMER0_NORMAL_MODE
+ * 2. TIMER0_PHASE_PWM_MODE      (8-bit, OC0 = PB3)
+ * 3. TIMER0_CTC_MODE
+ * 4. TIMER0_FAST_PWM_MODE       (8-bit, OC0 = PB3)
+ */
+#define TIMER0_MODE             TIMER0_NORMAL_MODE
+
+/*
+ * Choose Timer0 Prescaler:
+ * TIMER0_NO_CLOCK
+ * TIMER0_PRESCALER_1
+ * TIMER0_PRESCALER_8
+ * TIMER0_PRESCALER_64
+ * TIMER0_PRESCALER_256
+ * TIMER0_PRESCALER_1024
+ */
+#define TIMER0_PRESCALER        TIMER0_PRESCALER_64
+
+/* ============================================================ */
+/*                          Timer1                               */
+/* ============================================================ */
+
+/*
+ * Choose Timer1 Mode:
+ * TIMER1_NORMAL_MODE
+ * TIMER1_CTC_MODE            (TOP = OCR1A)
+ * TIMER1_FAST_PWM_8BIT       (OC1A = PD5, OC1B = PD4)
+ * TIMER1_FAST_PWM_9BIT
+ * TIMER1_FAST_PWM_10BIT
+ * TIMER1_PHASE_PWM_8BIT
+ * TIMER1_PHASE_PWM_9BIT
+ * TIMER1_PHASE_PWM_10BIT
+ */
+#define TIMER1_MODE              TIMER1_NORMAL_MODE
+
+/*
+ * Choose Timer1 Prescaler:
+ * TIMER1_NO_CLOCK
+ * TIMER1_PRESCALER_1
+ * TIMER1_PRESCALER_8
+ * TIMER1_PRESCALER_64
+ * TIMER1_PRESCALER_256
+ * TIMER1_PRESCALER_1024
+ */
+#define TIMER1_PRESCALER         TIMER1_PRESCALER_64
+
+/* ============================================================ */
+/*                          Timer2                               */
+/* ============================================================ */
+
+/*
+ * Choose Timer2 Mode:
+ * TIMER2_NORMAL_MODE
+ * TIMER2_PHASE_PWM_MODE      (8-bit, OC2 = PD7)
+ * TIMER2_CTC_MODE
+ * TIMER2_FAST_PWM_MODE       (8-bit, OC2 = PD7)
+ */
+#define TIMER2_MODE              TIMER2_NORMAL_MODE
+
+/*
+ * Choose Timer2 Prescaler (NOTE: unique taps vs Timer0/1 - includes /32, /128):
+ * TIMER2_NO_CLOCK
+ * TIMER2_PRESCALER_1
+ * TIMER2_PRESCALER_8
+ * TIMER2_PRESCALER_32
+ * TIMER2_PRESCALER_64
+ * TIMER2_PRESCALER_128
+ * TIMER2_PRESCALER_256
+ * TIMER2_PRESCALER_1024
+ */
+#define TIMER2_PRESCALER         TIMER2_PRESCALER_64
+
+/*
+ * Choose Timer2 Clock Source:
+ * TIMER2_ASYNC_DISABLE   Driven by system clock (like Timer0/1)
+ * TIMER2_ASYNC_ENABLE    Driven by external 32.768kHz crystal on TOSC1/TOSC2
+ *                         (typically used to build a real-time clock)
+ */
+#define TIMER2_ASYNC             TIMER2_ASYNC_DISABLE
+
+#endif /* TIMER_CONFIG_H */
