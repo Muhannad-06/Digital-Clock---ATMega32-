@@ -113,13 +113,13 @@ void LCD_voidSendData(u8 Copy_u8DATA)
     digitalWrite(LCD_CTRL_PORT, LCD_PIN_EN, DIO_PIN_LOW);
 }
 
-void LCD_voidSendString(u8* Copy_u8String)
+void LCD_voidSendString(u8* pvu8String)
 {
     u8 i = 0;
-    if( Copy_u8String != NULL ){
-        while (Copy_u8String[i] != '\0')
+    if( pvu8String != NULL ){
+        while (pvu8String[i] != '\0')
         {
-            LCD_voidSendData(Copy_u8String[i]);
+            LCD_voidSendData(pvu8String[i]);
             i++;
         }
     }

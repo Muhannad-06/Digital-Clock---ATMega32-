@@ -60,7 +60,7 @@
 void LCD_voidInit                      ( void);
 void LCD_voidSendData                  ( u8 Copy_u8Data);
 void LCD_voidSendCommand               ( u8 Copy_u8Instruction);
-void LCD_voidSendString                ( const u8 * Copy_u8ptrString);
+void LCD_voidSendString                ( const u8 * pvu8String);
 void LCD_voidSendNumber                ( u64 Copy_u64Number);
 void LCD_voidSetPosition               ( u8 Copy_u8Row, u8 Copy_u8Col );
 void LCD_voidClearScreen               (void);
