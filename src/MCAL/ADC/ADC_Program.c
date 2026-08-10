@@ -16,7 +16,7 @@
 #include "ADC_Private.h"
 #include "ADC_Config.h"
 
-static volatile ADC_u8BusyFlag = NOTBUSY;
+static volatile u8 ADC_u8BusyFlag = NOTBUSY;
 static volatile u16 *ADC_pu16AsynchConversionResult = NULL;
 static volatile void (*ADC_pvNotificationFUNC)(void) = NULL;
 

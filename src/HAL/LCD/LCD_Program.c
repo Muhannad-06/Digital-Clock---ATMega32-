@@ -15,13 +15,32 @@
 #include "LCD_Private.h"
 #include "LCD_Config.h"
 
-//#include <util/delay.h>
+#include <util/delay.h>
+
+#if LCD_MODE == LCD_4BITS
+/* Puts the low nibble of Copy_u8Nibble (bits 0..3) onto D4..D7
+ * (DIO_PIN4..DIO_PIN7) of LCD_DATA_PORT and pulses EN. Only ever touches
+ * pins 4..7 of the port, so PA0..PA3 (ADC0..ADC3 / POT) are never
+ * disturbed. */
+static void LCD_voidWriteNibble(u8 Copy_u8Nibble)
+{
+    digitalWrite(LCD_DATA_PORT, DIO_PIN4, READ_BIT(Copy_u8Nibble, 0));
+    digitalWrite(LCD_DATA_PORT, DIO_PIN5, READ_BIT(Copy_u8Nibble, 1));
+    digitalWrite(LCD_DATA_PORT, DIO_PIN6, READ_BIT(Copy_u8Nibble, 2));
+    digitalWrite(LCD_DATA_PORT, DIO_PIN7, READ_BIT(Copy_u8Nibble, 3));
+
+    digitalWrite(LCD_CTRL_PORT, LCD_PIN_EN, DIO_PIN_HIGH);
+    _delay_us(50);
+    digitalWrite(LCD_CTRL_PORT, LCD_PIN_EN, DIO_PIN_LOW);
+    _delay_us(50);
+}
+#endif
 
 void LCD_voidInit()
 {
-
-		portMode(LCD_CTRL_PORT, DIO_PORT_OUTPUT);
-	    portMode(LCD_DATA_PORT, DIO_PORT_OUTPUT);
+	/* LCD_CTRL_PORT (RS/RW/EN, and BUZZ on the same physical port) is
+	 * fully dedicated in this design, safe to configure as a whole port. */
+	portMode(LCD_CTRL_PORT, DIO_PORT_OUTPUT);
 
 	//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<      8 Bits Mode       >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -37,7 +56,7 @@ void LCD_voidInit()
 	    LCD_voidSendCommand(lcd_home);
 	    _delay_us(50);
 
-		LCD_voidSendCommand(EIGHT_BITS);
+		LCD_voidSendCommand(0x38);
 	    _delay_us(50);
 
 	    /* Display ON, Cursor ON, Blink ON */
@@ -56,6 +75,8 @@ void LCD_voidInit()
 	#elif  LCD_MODE == LCD_4BITS
 	    _delay_ms(40);
 
+	/* Only D4..D7 are physically wired (to PA4..PA7) - PA0..PA3 stay
+	 * whatever the ADC driver has configured them as (POT is on PA0). */
 	pinMode  ( LCD_DATA_PORT, DIO_PIN4,DIO_PIN_OUTPUT);
 	pinMode  ( LCD_DATA_PORT, DIO_PIN5,DIO_PIN_OUTPUT);
 	pinMode  ( LCD_DATA_PORT, DIO_PIN6,DIO_PIN_OUTPUT);
@@ -64,39 +85,62 @@ void LCD_voidInit()
 	pinMode  ( LCD_CTRL_PORT , LCD_PIN_RW , DIO_PIN_OUTPUT  );
 	pinMode  ( LCD_CTRL_PORT , LCD_PIN_EN , DIO_PIN_OUTPUT  );
 
-		LCD_voidSendCommand(lcd_home);
-	    _delay_us(50);
+	digitalWrite(LCD_CTRL_PORT, LCD_PIN_RS, DIO_PIN_LOW);
+	digitalWrite(LCD_CTRL_PORT, LCD_PIN_RW, DIO_PIN_LOW);
 
-	    /* Set 4-bit mode */
-	    LCD_voidSendCommand(FOUR_BITS);
-	    _delay_us(50);
+	/* HD44780 power-on reset sequence: the controller always starts up
+	 * expecting 8-bit instructions, so the first nibbles we push out
+	 * must be sent RAW (single nibble = high nibble of an 8-bit
+	 * "Function Set" command), NOT through LCD_voidSendCommand() (which
+	 * would already assume 4-bit two-nibble framing). This is the
+	 * standard datasheet-mandated way to force the LCD into 4-bit mode
+	 * when only D4..D7 are wired up. */
+	LCD_voidWriteNibble(0x03);
+	_delay_ms(5);
+	LCD_voidWriteNibble(0x03);
+	_delay_us(150);
+	LCD_voidWriteNibble(0x03);
+	_delay_us(150);
+	LCD_voidWriteNibble(0x02); /* switch to 4-bit interface */
+	_delay_us(150);
 
-		LCD_voidSendCommand(lcd_DisplayOn_CursorOn);
-		_delay_us(50);
+	/* From here on the LCD is in true 4-bit mode: every command/data
+	 * byte is sent as high-nibble-then-low-nibble by LCD_voidSendCommand()
+	 * / LCD_voidSendData(). */
+	LCD_voidSendCommand(FOUR_BITS); /* 0x28: 4-bit, 2-line, 5x8 font */
+	_delay_us(50);
 
-		LCD_voidSendCommand(lcd_Clear);
-		_delay_ms(2);
+	LCD_voidSendCommand(lcd_DisplayOff_CursorOff);
+	_delay_us(50);
 
-	    /* 4-bit mode, 2 lines, 5x8 font */
-	    LCD_voidSendCommand(lcd_EntryMode);
-	    _delay_us(50);
+	LCD_voidSendCommand(lcd_Clear);
+	_delay_ms(2);
+
+	LCD_voidSendCommand(lcd_EntryMode);
+	_delay_us(50);
+
+	LCD_voidSendCommand(lcd_DisplayOn_CursorOff);
+	_delay_us(50);
 	#endif
 }
 
 void LCD_voidSendCommand(u8 Copy_u8Instruction)
 {
-    /*RS = 0 RW = 0 E = 1*/
+    /*RS = 0 RW = 0*/
     digitalWrite(LCD_CTRL_PORT, LCD_PIN_RS, DIO_PIN_LOW);
     digitalWrite(LCD_CTRL_PORT, LCD_PIN_RW, DIO_PIN_LOW);
-    digitalWrite(LCD_CTRL_PORT, LCD_PIN_EN, DIO_PIN_HIGH);
 
-    digitalWritePORT(LCD_DATA_PORT, Copy_u8Instruction);
+    #if LCD_MODE == LCD_4BITS
+        LCD_voidWriteNibble((Copy_u8Instruction >> 4) & 0x0F); /* high nibble first */
+        LCD_voidWriteNibble(Copy_u8Instruction & 0x0F);        /* then low nibble   */
+    #elif LCD_MODE == LCD_8BITS
+        digitalWrite(LCD_CTRL_PORT, LCD_PIN_EN, DIO_PIN_HIGH);
+        digitalWritePORT(LCD_DATA_PORT, Copy_u8Instruction);
+        _delay_us(50);
+        digitalWrite(LCD_CTRL_PORT, LCD_PIN_EN, DIO_PIN_LOW);
+    #endif
 
-    /* E  1 --> 0 */
-    digitalWrite(LCD_CTRL_PORT, LCD_PIN_EN, DIO_PIN_HIGH);
-    _delay_ms(5);
-    digitalWrite(LCD_CTRL_PORT, LCD_PIN_EN, DIO_PIN_LOW);
-    
+    _delay_ms(2);
 }
 
 void LCD_voidSendData(u8 Copy_u8DATA)
@@ -104,16 +148,21 @@ void LCD_voidSendData(u8 Copy_u8DATA)
     /* RS = 1  RW = 0 */
     digitalWrite(LCD_CTRL_PORT, LCD_PIN_RS, DIO_PIN_HIGH);
     digitalWrite(LCD_CTRL_PORT, LCD_PIN_RW, DIO_PIN_LOW);
-    digitalWrite(LCD_CTRL_PORT, LCD_PIN_EN, DIO_PIN_HIGH);
 
-    digitalWritePORT(LCD_DATA_PORT, Copy_u8DATA);
-    /* E  1 -> 0*/
-    digitalWrite(LCD_CTRL_PORT, LCD_PIN_EN, DIO_PIN_HIGH);
-    _delay_ms(5);
-    digitalWrite(LCD_CTRL_PORT, LCD_PIN_EN, DIO_PIN_LOW);
+    #if LCD_MODE == LCD_4BITS
+        LCD_voidWriteNibble((Copy_u8DATA >> 4) & 0x0F);
+        LCD_voidWriteNibble(Copy_u8DATA & 0x0F);
+    #elif LCD_MODE == LCD_8BITS
+        digitalWrite(LCD_CTRL_PORT, LCD_PIN_EN, DIO_PIN_HIGH);
+        digitalWritePORT(LCD_DATA_PORT, Copy_u8DATA);
+        _delay_us(50);
+        digitalWrite(LCD_CTRL_PORT, LCD_PIN_EN, DIO_PIN_LOW);
+    #endif
+
+    _delay_us(100);
 }
 
-void LCD_voidSendString(u8* pvu8String)
+void LCD_voidSendString(const u8* pvu8String)
 {
     u8 i = 0;
     if( pvu8String != NULL ){
@@ -150,13 +199,19 @@ void LCD_voidSendNumber(u64 Copy_u64Number)
 void LCD_voidSetPosition(u8 Copy_u8ROW, u8 Copy_u8COL)
 {
 	u8 XY_u8DDRAM_ADDRESS = 0;
-	    if(Copy_u8ROW == 0)
+
+	/* LCD_ROW_1/LCD_ROW_2 and LCD_COL_1..16 (see LCD_Interface.h) are
+	 * 1-based, but DDRAM addressing is 0-based, so convert here. */
+	u8 Local_u8Row = Copy_u8ROW - 1;
+	u8 Local_u8Col = Copy_u8COL - 1;
+
+	    if(Local_u8Row == 0)
 	    {
-	        XY_u8DDRAM_ADDRESS = Copy_u8COL;
+	        XY_u8DDRAM_ADDRESS = Local_u8Col;
 	    }
-	    else if(Copy_u8ROW == 1)
+	    else if(Local_u8Row == 1)
 	    {
-	        XY_u8DDRAM_ADDRESS = 0x40 + Copy_u8COL;
+	        XY_u8DDRAM_ADDRESS = 0x40 + Local_u8Col;
 	    }
 
 	    /* Bit 7 must be high to set DDRAM address (0x80) */

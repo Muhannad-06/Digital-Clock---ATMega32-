@@ -23,10 +23,14 @@
 *        LCD_8BITS
 *        LCD_4BITS                 
 */
+/* Schematic only wires the LCD's D4..D7 pins (to PA4..PA7); D0..D3 are
+ * left unconnected. LCD_voidSendCommand()/LCD_voidSendData() split every
+ * byte into a high-nibble write followed by a low-nibble write (two EN
+ * pulses), each nibble placed only on D4..D7, so PA0..PA3 (shared with
+ * ADC0..ADC3, i.e. POT) are never touched. Keep this set to LCD_4BITS. */
 #define LCD_MODE            LCD_4BITS
 
 /***************************************************************************************/
-
 
 
 
@@ -46,7 +50,7 @@
 
 #define LCD_DATA_PORT       DIO_PORTA
 /* RS,RW,EN */
-#define LCD_CTRL_PORT       DIO_PORTB
+#define LCD_CTRL_PORT       DIO_PORTC
 
 /***************************************************************************************/
 
@@ -64,9 +68,10 @@
  	 8-DIO_PIN7
 
  */
-#define LCD_PIN_RS             DIO_PIN1
-#define LCD_PIN_RW             DIO_PIN2
-#define LCD_PIN_EN             DIO_PIN3
+/* Per schematic: U1 PC0/SCL -> RS, PC1/SDA -> RW, PC2/TCK -> EN */
+#define LCD_PIN_RS             DIO_PIN0
+#define LCD_PIN_RW             DIO_PIN1
+#define LCD_PIN_EN             DIO_PIN2
 
 /***************************************************************************************/
 

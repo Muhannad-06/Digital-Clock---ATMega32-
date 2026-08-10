@@ -1,7 +1,7 @@
 #ifndef APP_H
 #define APP_H
 
-#include "STD_TYPES.h"
+#include "../LIBs/STD_TYPES.h"
 
 /* State Machine Enums */
 typedef enum {
@@ -25,13 +25,19 @@ typedef struct {
     u16 year;
 } Date_t;
 
-/* Global Variables exported for ISRs */
+/* Global Variables exported for ISRs and APP modules */
 extern volatile ClockMode_t CurrentMode;
 extern volatile Time_t CurrentTime;
 extern volatile Time_t AlarmTime;
 extern volatile u8 TimerMinutes;
 extern volatile u8 TimerSeconds;
 extern volatile u8 TimerActiveFlag;
+
+/* Add this line right here! */
+extern volatile u8 AlarmActiveFlag;
+
+/* Seconds the buzzer keeps beeping after an Alarm/Timer trigger */
+extern volatile u8 BuzzerBeepCounter;
 
 /* Application Function Prototypes */
 void APP_voidInit(void);

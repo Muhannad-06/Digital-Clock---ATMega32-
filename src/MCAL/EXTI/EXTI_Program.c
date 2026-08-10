@@ -179,7 +179,9 @@ ErrorCode EXTI_enumSetSignalLatch(u8 Copy_u8EXTINo, u8 Copy_u8EXTISense)
                         default:
                         break;
                     }
-                case EXTI_u8EXTI2:
+                break;
+
+            case EXTI_u8EXTI2:
                 switch (Copy_u8EXTISense)
                 {
                         case EXTI_FALLING_EDGE:

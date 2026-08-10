@@ -3,16 +3,10 @@
 
 
 /* Private Macros */
-
-#define EXTI_u8EXTI0    0
-#define EXTI_u8EXTI1    1
-#define EXTI_u8EXTI2    2
-
-/* SENSE */
-#define EXTI_LOW_LEVEL              0
-#define EXTI_ANY_LOGICAL_CHANGE     1
-#define EXTI_FALLING_EDGE           2
-#define EXTI_RISING_EDGE            3
+/* NOTE: EXTI line numbers (EXTI_u8EXTI0..2) and sense options
+ * (EXTI_LOW_LEVEL..EXTI_RISING_EDGE) are public API and now live in
+ * EXTI_Interface.h so the APP layer can use them without including
+ * this private header. */
 
 /********************************************************** */
 /* Address Of Register MCUCR */
