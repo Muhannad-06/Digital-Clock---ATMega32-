@@ -64,18 +64,3 @@ This project was simulated in Proteus and is designed for the standard ATmega32 
 > **Note:** All push buttons are configured using the ATmega32's internal pull-up resistors and trigger on a falling edge (connected to GND).
 
 ---
-
-## 🚀 Getting Started
-
-### Prerequisites
-*   AVR GCC Toolchain (WinAVR or Microchip Studio).
-*   Proteus (for simulation) or a physical ATmega32 development board.
-*   AVRDUDE (if flashing to physical hardware).
-
-### Building the Project
-1.  Clone the repository:
-    ```bash
-    git clone [https://github.com/YourUsername/YourRepoName.git](https://github.com/YourUsername/YourRepoName.git)
-    ```
-2.  Compile the source code using your preferred IDE (e.g., Eclipse with AVR plugin, Atmel Studio). Ensure the optimization level is set appropriately for time-sensitive delays (`-O1` or `-O2`).
-3.  Flash the generated `.hex` file to your ATmega32 using your programmer (e.g., USBasp) or load the `.hex` file into the ATmega32 component in your Proteus schematic.
