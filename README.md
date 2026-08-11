@@ -1,7 +1,10 @@
 # ATmega32 Digital Clock & Timer System
 
 A feature-rich, multi-mode digital clock built on the ATmega32 microcontroller. Written in embedded C, this project utilizes a strict layered architecture (MCAL, HAL, APP) and features hardware interrupts, ADC reading, and custom LCD character generation.
-
+## Team 
+Muhannad Mahfouz El-Shahiedy
+Mahmoud Emad Ibrahim
+Abdallah Emad Abdallah
 ## 🌟 Features
 
 The system operates across 4 distinct modes, controlled via a push-button state machine:
